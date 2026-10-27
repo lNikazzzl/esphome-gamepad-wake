@@ -2,7 +2,11 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import automation
 from esphome.components import binary_sensor, event, number, switch, text, text_sensor
-from esphome.components.esp32 import add_idf_sdkconfig_option
+from esphome.components.esp32 import (
+    add_idf_sdkconfig_option,
+    request_bluetooth,
+    request_software_coexistence,
+)
 from esphome.const import CONF_ID, CONF_TRIGGER_ID
 
 DEPENDENCIES = ["esp32", "wifi"]
@@ -46,7 +50,7 @@ CONFIG_SCHEMA = cv.All(
             ),
         }
     ).extend(cv.COMPONENT_SCHEMA),
-    cv.only_with_esp_idf,
+    cv.only_with_framework("esp-idf"),
 )
 
 _ENTITY_SETTERS = {
@@ -77,6 +81,8 @@ async def to_code(config):
         await automation.build_automation(trigger, [(cg.std_string, "address")], conf)
 
     # Bare Classic BT controller driven over VHCI, no host stack
+    request_bluetooth()
+    request_software_coexistence()
     add_idf_sdkconfig_option("CONFIG_BT_ENABLED", True)
     add_idf_sdkconfig_option("CONFIG_BT_CONTROLLER_ONLY", True)
     add_idf_sdkconfig_option("CONFIG_BTDM_CTRL_MODE_BR_EDR_ONLY", True)

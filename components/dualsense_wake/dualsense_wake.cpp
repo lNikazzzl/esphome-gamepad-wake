@@ -167,7 +167,7 @@ void DualsenseWake::setup() {
   }
   if (!this->bt_start_()) {
     this->bt_failed_ = true;
-    this->status_set_error("Bluetooth init failed");
+    this->status_set_error(LOG_STR("Bluetooth init failed"));
     this->chip_address_sensor_->publish_state("Bluetooth init failed");
     return;
   }
