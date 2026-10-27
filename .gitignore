@@ -1,0 +1,6 @@
+.esphome/
+secrets.yaml
+*.dev.yaml
+__pycache__/
+.idea/
+.claude/

@@ -1,0 +1,32 @@
+# Prebuilt firmware published to GitHub Pages: core config + provisioning and updates
+substitutions:
+  # Build the component from this checkout, so CI and releases match the commit
+  component_source: components
+
+packages:
+  core: !include dualsense-wake.yaml
+
+esphome:
+  project:
+    name: dualsense.wake
+    version: dev  # replaced by the GitHub workflow with the release version
+
+# Adopting in the ESPHome dashboard pulls the core config without the factory extras
+dashboard_import:
+  package_import_url: github://lNikazzzl/esphome-gamepad-wake/dualsense-wake.yaml@main
+
+# Wi-Fi setup over USB right from the ESP Web Tools install page.
+# No esp32_improv: it needs the BLE host stack, while this firmware runs the controller in Classic-only mode.
+improv_serial:
+
+http_request:
+
+ota:
+  - platform: http_request
+    id: ota_http_request
+
+update:
+  - platform: http_request
+    name: None
+    id: update_http_request
+    source: https://lnikazzzl.github.io/esphome-gamepad-wake/firmware/dualsense-wake.manifest.json

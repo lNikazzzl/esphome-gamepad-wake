@@ -1,0 +1,23 @@
+name: Release Drafter
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write  # create/update the draft release
+  pull-requests: read  # categorize merged pull requests
+
+concurrency:
+  group: release-drafter
+  cancel-in-progress: false
+
+jobs:
+  release-drafter:
+    name: Update draft release
+    # Computes the next CalVer version (YY.M.N, reusing the current draft's
+    # sequence number) and runs release-drafter with it. Reads this repo's
+    # .github/release-drafter.yml for the changelog categories, then empties
+    # the draft's assets so the Build workflow can attach a fresh set.
+    uses: esphome/workflows/.github/workflows/draft-calver-release.yml@cc3e76de337dc59bc1cba8da58d963cd23b873f1  # 2026.9.0

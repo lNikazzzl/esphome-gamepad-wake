@@ -1,0 +1,150 @@
+# DualSense Wake: catch the PS button of a gamepad paired to a powered-off PC
+# and expose it to Home Assistant as an event.
+# Requires an original ESP32 (WROOM-32 / DevKit). ESP32-S2/S3/C3/C6 have no Bluetooth Classic.
+
+substitutions:
+  name: dualsense-wake
+  friendly_name: DualSense Wake
+  component_source: github://lNikazzzl/esphome-gamepad-wake@main
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: true
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+logger:
+
+api:
+
+ota:
+  - platform: esphome
+
+wifi:
+  power_save_mode: light  # modem sleep is required for Wi-Fi/Bluetooth coexistence
+  ap: {}
+
+captive_portal:
+
+external_components:
+  - source: ${component_source}
+    components: [dualsense_wake]
+
+dualsense_wake:
+  host_mac_text: pc_mac
+  pc_ip_text: pc_ip
+  enabled_switch: tracking
+  any_device_switch: any_device
+  pause_number: pause_after_press
+  guard_number: guard
+  press_event: ps_button
+  listening_sensor: listening
+  pc_online_sensor: pc_online
+  last_caller_sensor: last_caller
+  chip_address_sensor: chip_address
+
+event:
+  - platform: template
+    id: ps_button
+    name: "PS Button"
+    icon: mdi:sony-playstation
+    event_types:
+      - press
+
+switch:
+  - platform: template
+    id: tracking
+    name: "Enabled"
+    icon: mdi:radar
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+  - platform: template
+    id: any_device
+    name: "Any Device Triggers"
+    icon: mdi:devices
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    entity_category: config
+
+text:
+  - platform: template
+    id: pc_mac
+    name: "PC Bluetooth MAC"
+    icon: mdi:bluetooth
+    mode: text
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    max_length: 17
+    pattern: '^$|^([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}$'
+    entity_category: config
+  - platform: template
+    id: pc_ip
+    name: "PC IP"
+    icon: mdi:ip-network
+    mode: text
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    max_length: 15
+    pattern: '^$|^([0-9]{1,3}\.){3}[0-9]{1,3}$'
+    entity_category: config
+
+number:
+  - platform: template
+    id: pause_after_press
+    name: "Pause After Press"
+    icon: mdi:timer-pause
+    unit_of_measurement: s
+    min_value: 0
+    max_value: 600
+    step: 5
+    initial_value: 90
+    optimistic: true
+    restore_value: true
+    mode: box
+    entity_category: config
+  - platform: template
+    id: guard
+    name: "Ignore After PC Off"
+    icon: mdi:shield-outline
+    unit_of_measurement: s
+    min_value: 0
+    max_value: 300
+    step: 5
+    initial_value: 30
+    optimistic: true
+    restore_value: true
+    mode: box
+    entity_category: config
+
+button:
+  - platform: restart
+    name: "Restart"
+
+binary_sensor:
+  - platform: template
+    id: listening
+    name: "Listening"
+    icon: mdi:ear-hearing
+    entity_category: diagnostic
+  - platform: template
+    id: pc_online
+    name: "PC Online"
+    device_class: connectivity
+
+text_sensor:
+  - platform: template
+    id: last_caller
+    name: "Last Device"
+    icon: mdi:bluetooth-connect
+    entity_category: diagnostic
+  - platform: template
+    id: chip_address
+    name: "ESP Bluetooth Address"
+    icon: mdi:chip
+    entity_category: diagnostic
